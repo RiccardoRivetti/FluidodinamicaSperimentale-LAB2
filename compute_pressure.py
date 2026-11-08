@@ -76,7 +76,7 @@ def main():
     input_file = args.input_file
 
     # Output path
-    output_folder = "./Data/Cp"
+    output_folder = "./Output/Cp"
 
     # Import data and list of angles
     DATA, angles = import_data(input_file)
