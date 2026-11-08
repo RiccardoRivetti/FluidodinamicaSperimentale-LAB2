@@ -15,3 +15,9 @@ class TestSection:
         self.height = height
         self.area   = width*height
         self.pressure_gradient = pressure_gradient
+
+class PressureTransducer:
+    def __init__(self,name,full_scale,accuracy):
+        self.name       = name
+        self.full_scale = full_scale
+        self.accuracy   = accuracy
