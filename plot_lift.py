@@ -26,9 +26,13 @@ def import_xfoil_data(filename):
 def plot_lift_coefficient(alpha, CL_mean, CL_unc, alpha_xfoil, CL_xfoil, show_plot):
     fig, ax = plt.subplots()
 
-    ax.errorbar(alpha,CL_mean,yerr=CL_unc,label="Misura sperimentale",
-                marker="s",color=bluepoli1,capsize=3,zorder=1)
+    ax.plot(alpha,CL_mean,label="Misura sperimentale",
+                marker="s",color=bluepoli1,zorder=2,clip_on=False)
+    ax.fill_between(alpha, CL_mean-CL_unc, CL_mean+CL_unc, color=bluepoli1, alpha=.5,
+                    linewidth=0, label="I.C. 95%", zorder=1)
     ax.plot(alpha_xfoil,CL_xfoil,label="xfoil",color=bluepoli2,linestyle="--",zorder=0)
+
+    plt.xlim((np.min(alpha),np.max(alpha)))
 
     plt.grid(True,linestyle="--",alpha=0.4)
     plt.legend(fontsize=12,loc="upper left")
