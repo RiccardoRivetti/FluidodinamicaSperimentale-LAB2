@@ -30,7 +30,7 @@ def import_xfoil_data(filename):
 
     return x_xfoil, Cp_xfoil
 
-def import_taps_coordinates(filename):
+def import_coordinates(filename):
     coords = np.loadtxt(filename,delimiter=",",skiprows=1)
     x  = coords[:,0]
     y  = coords[:,1]
@@ -42,6 +42,43 @@ def split_surfaces(x):
     low = x[8:]
 
     return up, low
+
+def draw_arrow(ax, x0, y0, x_airfoil, y_airfoil, mag):
+    # Divide upper and lower surface and find tap position
+    idx_le = np.where((x_airfoil == 0) & (y_airfoil == 0))[0][0]
+    if y0 >= 0:
+        xx = x_airfoil[:idx_le]
+        yy = y_airfoil[:idx_le]
+        idx = np.searchsorted(-xx, -x0)
+    else:
+        xx = x_airfoil[idx_le:]
+        yy = y_airfoil[idx_le:]
+        idx = np.searchsorted(xx, x0)
+    
+    # Compute the normal versor
+    xx1, xx2 = xx[idx-1], xx[idx]
+    yy1, yy2 = yy[idx-1], yy[idx]
+    dx, dy = xx2 - xx1, yy2 - yy1
+
+    L = np.hypot(dx, dy)
+    nx, ny = dy/L, -dx/L
+
+    # Compute segment midpoint
+    xm, ym = (xx1+xx2)/2, (yy1+yy2)/2
+
+    # Compute final point
+    scale = 0.5
+    ux, uy = -mag * nx * scale, -mag * ny * scale
+
+    # Orient vector
+    if mag > 0:
+        x_start, y_start = xm - ux, ym - uy  # shift the tail outside, head lands on the surface
+    else:
+        x_start, y_start = xm, ym            # tail on the surface, head outside
+
+    # Draw vector
+    ax.quiver(x_start, y_start, ux, uy, angles="xy", scale_units="xy", scale=1, color=bluepoli2, width=0.005, zorder=0)
+    return (x_start, y_start), (x_start + ux, y_start + uy)
 
 def plot_pressure_coefficient(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha, show_plot):
     x_up, x_low = split_surfaces(x_taps)
@@ -60,6 +97,31 @@ def plot_pressure_coefficient(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha,
     plt.legend(fontsize=12,loc="upper right")
     plt.xlabel("x/c [-]",fontsize=14)
     plt.ylabel("$C_p$ [-]",fontsize=14)
+    plt.title(f"AoA = {alpha} deg",fontsize=14,loc="right")
+
+    if show_plot:
+        plt.show()
+
+def plot_airfoil_pressure(x_airfoil, y_airfoil, x_taps, y_taps, Cp_mean, alpha, show_plot):
+    fig, ax = plt.subplots()
+
+    # Plot airfoil
+    ax.plot(x_airfoil,y_airfoil,color=bluepoli1,zorder=1,linewidth=2)
+
+    # Plot arrows
+    pts = [] # Initialize points to dinamically adjust axes limits
+    for i in range(len(Cp_mean)):
+        tail, head = draw_arrow(ax,x_taps[i],y_taps[i],x_airfoil,y_airfoil,Cp_mean[i])
+        pts += [tail, head]
+    
+    # Dynamically set limits so that arrows don't go outside of the graph
+    ax.update_datalim(pts)
+    ax.autoscale_view()
+    ax.set_aspect("equal")
+
+    plt.grid(True,linestyle="--",alpha=0.4)
+    plt.xlabel("x/c [-]",fontsize=14)
+    plt.ylabel("y/c [-]",fontsize=14)
     plt.title(f"AoA = {alpha} deg",fontsize=14,loc="right")
 
     if show_plot:
@@ -84,10 +146,15 @@ def main():
     x_xfoil, Cp_xfoil = import_xfoil_data(xfoil_file)
 
     # Import pressure taps coordinates
-    x_taps, y_taps = import_taps_coordinates("./Data/taps_positions.csv")
+    x_taps, y_taps = import_coordinates("./Data/taps_positions.csv")
+
+    # Import airfoil coordinates
+    x_airfoil, y_airfoil = import_coordinates("./Data/NACA23012.csv")
 
     # Plot pressure coefficient
     plot_pressure_coefficient(x_taps,Cp_mean,Cp_unc,x_xfoil,Cp_xfoil,alpha,show_plot)
+    plot_airfoil_pressure(x_airfoil,y_airfoil,x_taps,y_taps,Cp_mean,alpha,show_plot)
+    
 
 if __name__ == "__main__":
     main()
