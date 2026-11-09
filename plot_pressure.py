@@ -43,7 +43,7 @@ def split_surfaces(x):
 
     return up, low
 
-def draw_arrow(ax, x0, y0, x_airfoil, y_airfoil, mag):
+def draw_arrow(ax, x0, y0, x_airfoil, y_airfoil, magnitude):
     # Divide upper and lower surface and find tap position
     idx_le = np.where((x_airfoil == 0) & (y_airfoil == 0))[0][0]
     if y0 >= 0:
@@ -68,10 +68,10 @@ def draw_arrow(ax, x0, y0, x_airfoil, y_airfoil, mag):
 
     # Compute final point
     scale = 0.5
-    ux, uy = -mag * nx * scale, -mag * ny * scale
+    ux, uy = -magnitude * nx * scale, -magnitude * ny * scale
 
     # Orient vector
-    if mag > 0:
+    if magnitude > 0:
         x_start, y_start = xm - ux, ym - uy  # shift the tail outside, head lands on the surface
     else:
         x_start, y_start = xm, ym            # tail on the surface, head outside
