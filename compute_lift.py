@@ -37,9 +37,8 @@ def divide_surfaces(Cp):
 def get_trapz_weights(coords):
     return np.trapezoid(np.eye(len(coords)), coords)
 
-def get_lift_coefficient(measures, alpha, x_up, x_low, y_up, y_low):
+def get_lift_coefficient(measures, x_up, x_low):
     n_meas = len(measures[:,0])
-    CD = np.zeros(n_meas)
     CL = np.zeros(n_meas)
     q  = np.zeros(n_meas)
 
@@ -50,15 +49,10 @@ def get_lift_coefficient(measures, alpha, x_up, x_low, y_up, y_low):
         # Divide in upper and lower surface
         Cp_up, Cp_low = divide_surfaces(Cp)    
 
-        # Axial and normal force coefficients
-        C_Fx =  np.trapezoid(Cp_up, y_up) - np.trapezoid(Cp_low, y_low)
-        C_Fy = -np.trapezoid(Cp_up, x_up) + np.trapezoid(Cp_low, x_low)
+        # Compute lift coefficient
+        CL[i] = -np.trapezoid(Cp_up, x_up) + np.trapezoid(Cp_low, x_low)
 
-        # Rotate to the wind axes
-        CD[i] =  C_Fx*np.cos(alpha) + C_Fy*np.sin(alpha)
-        CL[i] = -C_Fx*np.sin(alpha) + C_Fy*np.cos(alpha)
-
-    return CD, CL, q
+    return CL, q
 
 def get_coefficient_stats(coeff,q,S_weights):
     # Compute mean
@@ -101,13 +95,10 @@ def main():
     # Import pressure taps coordinates
     x_up, x_low, y_up, y_low = import_taps_coordinates("./Data/taps_positions.csv")
 
-    # Initialize coefficients array
-    CD_MATRIX = np.zeros((len(angles),5))
+    # Initialize coefficients matrix
     CL_MATRIX = np.zeros((len(angles),5))
-    i = 0
-
-    CD_MATRIX[:,0] = angles
     CL_MATRIX[:,0] = angles
+    i = 0
 
     # Loop for each angle
     for alpha in angles:
@@ -115,26 +106,20 @@ def main():
         measures = DATA[DATA[:,-1] == alpha]
 
         # Compute sum of trapezoid weights
-        w_x = np.concatenate([get_trapz_weights(y_up), -get_trapz_weights(y_low)])
-        w_y = np.concatenate([-get_trapz_weights(x_up),  get_trapz_weights(x_low)])
-        S_x = w_x.sum()
-        S_y = w_y.sum()
+        w = np.concatenate([-get_trapz_weights(x_up),  get_trapz_weights(x_low)])
+        S = w.sum()
 
         # Compute coefficients and dynamic pressures
-        CD, CL, q = get_lift_coefficient(measures,alpha,x_up,x_low,y_up,y_low)
+        CL, q = get_lift_coefficient(measures,x_up,x_low)
 
         # Compute coefficient mean and uncertanty
-        CD_mean, CD_unc, CD_u_A, CD_u_B = get_coefficient_stats(CD,q,S_x)
-        CL_mean, CL_unc, CL_u_A, CL_u_B = get_coefficient_stats(CL,q,S_y)
+        CL_mean, CL_unc, CL_u_A, CL_u_B = get_coefficient_stats(CL,q,S)
 
         # Insert in data matrix
-        CD_MATRIX[i,1:] = [CD_mean, CD_unc, CD_u_A, CD_u_B]
         CL_MATRIX[i,1:] = [CL_mean, CL_unc, CL_u_A, CL_u_B]
         i += 1
 
     # Write results in files
-    write_coefficient_file(output_folder+"/CD.csv",CD_MATRIX)
-    print(f"Wrote CD file in {output_folder}")
     write_coefficient_file(output_folder+"/CL.csv",CL_MATRIX)
     print(f"Wrote CL file in {output_folder}")
 
