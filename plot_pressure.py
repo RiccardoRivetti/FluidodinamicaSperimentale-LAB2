@@ -43,15 +43,15 @@ def split_surfaces(x):
 
     return up, low
 
-def plot_Cp(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha, show_plot):
+def plot_pressure_coefficient(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha, show_plot):
     x_up, x_low = split_surfaces(x_taps)
     Cp_mean_up, Cp_mean_low = split_surfaces(Cp_mean)
     Cp_unc_up, Cp_unc_low = split_surfaces(Cp_unc)
 
     fig, ax = plt.subplots()
     
-    ax.errorbar(x_up,Cp_mean_up,yerr=Cp_unc_up,label="Dorso",marker="s",color=bluepoli1,capsize=3,zorder=3)
-    ax.errorbar(x_low,Cp_mean_low,yerr=Cp_unc_low,label="Ventre",marker="s",color=bluepoli2,capsize=3,zorder=2)
+    ax.errorbar(x_up,Cp_mean_up,yerr=Cp_unc_up,label="Dorso",marker="s",color=bluepoli1,capsize=3,zorder=2)
+    ax.errorbar(x_low,Cp_mean_low,yerr=Cp_unc_low,label="Ventre",marker="s",color=bluepoli2,capsize=3,zorder=1)
     ax.plot(x_xfoil,Cp_xfoil,label="xfoil",color=bluepoli3,linestyle="--",zorder=0)
 
     ax.invert_yaxis()
@@ -87,7 +87,7 @@ def main():
     x_taps, y_taps = import_taps_coordinates("./Data/taps_positions.csv")
 
     # Plot pressure coefficient
-    plot_Cp(x_taps,Cp_mean,Cp_unc,x_xfoil,Cp_xfoil,alpha,show_plot)
+    plot_pressure_coefficient(x_taps,Cp_mean,Cp_unc,x_xfoil,Cp_xfoil,alpha,show_plot)
 
 if __name__ == "__main__":
     main()
