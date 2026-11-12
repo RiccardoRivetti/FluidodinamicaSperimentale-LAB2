@@ -94,10 +94,13 @@ def plot_pressure_coefficient(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha,
     ax.invert_yaxis()
 
     plt.grid(True,linestyle="--",alpha=0.4)
-    plt.legend(fontsize=12,loc="upper right")
     plt.xlabel("x/c [-]",fontsize=14)
     plt.ylabel("$C_p$ [-]",fontsize=14)
     plt.title(f"AoA = {alpha} deg",fontsize=14,loc="right")
+
+    handles, labels = ax.get_legend_handles_labels()
+    order = [1,2,0]
+    plt.legend([handles[i] for i in order], [labels[i] for i in order], fontsize=14)
 
     if show_plot:
         plt.show()
