@@ -57,7 +57,7 @@ def get_drag_coefficient(z,V_wt,V_wake):
     z = np.asarray(z, dtype=float)*0.001 # convert in meters
     
     integral = np.trapezoid((V_wake/V_wt) * (1-V_wake/V_wt),z)
-    CD = (2/test_wing.chord)*integral
+    CD = 2/(test_wing.chord*test_wing.span)*integral
 
     return CD
 
