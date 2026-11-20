@@ -39,6 +39,7 @@ def import_data(folder):
 
 def export_wake_data(filename, z, V_wt, f_s, v_hw_mean, v_hw_std, I_u):
     data = np.column_stack((z, V_wt, f_s, v_hw_mean, v_hw_std, I_u))
+    data = data[data[:, 0].argsort()] # Sort in ascending z order
     header = "z,V_wt,f_s,v_hw_mean,v_hw_std,I_u"
 
     np.savetxt(filename,data,fmt="%.6e",delimiter=",",header=header,comments="")
