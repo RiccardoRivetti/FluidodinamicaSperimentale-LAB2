@@ -99,6 +99,24 @@ def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
     if show_plot:
         plt.show()
 
+def plot_energy_spectrum(k, Ek, K41, show_plot):
+    fig, ax = plt.subplots()
+
+    ax.loglog(k,Ek,label=f"Misura sperimentale",color=colors_poli[0],linewidth=1)
+    ax.loglog(k,K41,label=f"Teoria K41",color=colors_poli[1],linewidth=2,linestyle="--")
+
+    plt.xlim((1e1,1e4))
+    plt.ylim((1e-7,1e-2))
+
+    plt.grid(True,linestyle="--",alpha=0.4)
+    plt.legend(fontsize=12,loc="lower left")
+    plt.xlabel("$k$ [rad/m]",fontsize=14)
+    plt.ylabel("$E(k)$ [m$^3$s$^{-2}$]",fontsize=14)
+    plt.title("AoA = 10 deg",fontsize=14,loc="right")
+
+    if show_plot:
+        plt.show()
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-z", type=float, nargs=3, metavar=("z1", "z2", "z3"),
@@ -119,6 +137,10 @@ def main():
     # Plot spectrum
     frequency, amplitude, k, Ek, K41 = import_wake_spectrum(spectrum_folder,heights)
     plot_wake_spectrum(heights,frequency,amplitude,show_plot)
+
+    # Plot energy spectrum
+    plot_energy_spectrum(k[:,0], Ek[:,0], K41[:,0], show_plot)
+
 
 if __name__ == "__main__":
     main()

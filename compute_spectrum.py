@@ -36,7 +36,7 @@ def get_spectrum(V, f_s):
 
     return f, amp
 
-def get_energy_spectrum(V, f_s, nseg=2**14):
+def get_energy_spectrum(V, f_s, nseg=2**13):
     V_bar = V.mean()
     vp = V - V_bar
 
@@ -48,7 +48,7 @@ def get_energy_spectrum(V, f_s, nseg=2**14):
 
     return k[1:], Ek[1:]
 
-def get_K41(k, Ek, k_fit=(40,400), C=0.49):
+def get_K41(k, Ek, k_fit=(100,1000), C=0.49):
     # Estimate epsilon
     mask = (k >= k_fit[0]) & (k <= k_fit[1])
     eps_loc = (Ek[mask] * k[mask] ** (5 / 3) / C) ** 1.5
@@ -81,10 +81,6 @@ def main():
     # Compute energy spectrum in spatial frequencies domain and K41 theory
     k, Ek = get_energy_spectrum(V_wake, f_sampling)
     K41 = get_K41(k, Ek)
-    print(len(k))
-    print(len(Ek))
-    print(len(K41))
-    print(len(frequency))
 
     # Export data
     filename = output_folder + "/10deg_Z" + str(z) + ".npz"

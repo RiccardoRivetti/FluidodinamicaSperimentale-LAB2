@@ -18,7 +18,6 @@ def plot_wake_velocity(z,v_hw,show_plot):
     plt.xlim((12,24))
 
     plt.grid(True,linestyle="--",alpha=0.4)
-    # plt.legend(fontsize=12,loc="upper left")
     plt.xlabel("$V_{wake}$ [m/s]",fontsize=14)
     plt.ylabel("$z$ [mm]",fontsize=14)
     plt.title("AoA = 10 deg",fontsize=14,loc="right")
