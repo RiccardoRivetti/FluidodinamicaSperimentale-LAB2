@@ -42,13 +42,6 @@ def import_xfoil_CD(filename, alpha):
     data = np.loadtxt(filename,delimiter=",",skiprows=1)
     return data[data[:,0]==alpha,2][0]
 
-def export_wake_data(filename, z, V_wt, f_s, v_hw_mean, v_hw_std, I_u):
-    data = np.column_stack((z, V_wt, f_s, v_hw_mean, v_hw_std, I_u))
-    # data = data[data[:, 0].argsort()] # Sort in ascending z order
-    header = "z,V_wt,f_s,v_hw_mean,v_hw_std,I_u"
-
-    np.savetxt(filename,data,fmt="%.6e",delimiter=",",header=header,comments="")
-
 def get_freestream(V, edge_frac=0.20, k=3):
     V = np.asarray(V, dtype=float)
     n = len(V)
@@ -83,6 +76,20 @@ def get_drag_coefficient(z,V_wt,V_wake):
 
     return CD
 
+def get_drag_correction(CD,V_wt,rho=1.182):
+    t = test_wing.thickness*test_wing.chord
+    q = 0.5*rho*V_wt**2
+    buoyancy = np.pi/2 * test_wing.shape_factor * t**2 * test_section.pressure_gradient / (q*test_wing.chord)
+
+    return CD - buoyancy
+
+def export_wake_data(filename, z, V_wt, f_s, v_hw_mean, v_hw_std, I_u):
+    data = np.column_stack((z, V_wt, f_s, v_hw_mean, v_hw_std, I_u))
+    # data = data[data[:, 0].argsort()] # Sort in ascending z order
+    header = "z,V_wt,f_s,v_hw_mean,v_hw_std,I_u"
+
+    np.savetxt(filename,data,fmt="%.6e",delimiter=",",header=header,comments="")
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("input_folder", help="Path of the input data folder")
@@ -102,11 +109,13 @@ def main():
 
     # Compute drag
     CD_computed = get_drag_coefficient(z,V_wt,v_hw_mean)
+    CD_corrected = get_drag_correction(CD_computed,V_wt)
     CD_xfoil = import_xfoil_CD(xfoil_file,alpha)
     print("-------------------------")
     print(f"AoA: {alpha} deg")
-    print(f"Computed CD: {CD_computed:.5f}")
-    print(f"Xfoil CD:    {CD_xfoil}")
+    print(f"Computed CD:  {CD_computed:.5f}")
+    print(f"Corrected CD: {CD_corrected:.5f}")
+    print(f"Xfoil CD:     {CD_xfoil}")
     print("-------------------------")
 
     # Export wake data
