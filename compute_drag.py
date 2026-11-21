@@ -20,7 +20,6 @@ def import_data(folder):
     folder = Path(folder)
 
     z = []
-    V_wt = []
     f_s = []
 
     v_hw_mean = []
@@ -30,7 +29,6 @@ def import_data(folder):
     for path in sorted(folder.glob("*.dat")):
         header = read_header(path)
         z.append(header["Z[mm]"])
-        V_wt.append(header["Vgall[m/s]"])
         f_s.append(header["Fs[Hz]"])
 
         v_hw  = np.loadtxt(path,skiprows=1)
@@ -38,7 +36,7 @@ def import_data(folder):
         v_hw_std.append(np.std(v_hw))
         I_u.append(get_turbulence_intensity(np.std(v_hw),header["Vgall[m/s]"]))
 
-    return z, V_wt, f_s, v_hw_mean, v_hw_std, I_u
+    return z, f_s, v_hw_mean, v_hw_std, I_u
 
 def import_xfoil_CD(filename, alpha):
     data = np.loadtxt(filename,delimiter=",",skiprows=1)
@@ -52,6 +50,7 @@ def export_wake_data(filename, z, V_wt, f_s, v_hw_mean, v_hw_std, I_u):
     np.savetxt(filename,data,fmt="%.6e",delimiter=",",header=header,comments="")
 
 def get_freestream(V, edge_frac=0.20, k=3):
+    V = np.asarray(V, dtype=float)
     n = len(V)
     ne = max(3, int(edge_frac * n)) # How many edge point to consider
 
@@ -75,10 +74,9 @@ def get_freestream(V, edge_frac=0.20, k=3):
     # Return the mean of the points outside of the wake
     return V[outside].mean()
 
-def get_drag_coefficient(z,V_wake):
+def get_drag_coefficient(z,V_wt,V_wake):
     V_wake = np.asarray(V_wake, dtype=float)
     z = np.asarray(z, dtype=float)*0.001 # convert in meters
-    V_wt = get_freestream(V_wake)
     
     integral = np.trapezoid((V_wake/V_wt) * (1-V_wake/V_wt),z)
     CD = 2/(test_wing.chord)*integral
@@ -96,11 +94,14 @@ def main():
     output_folder = "./Output"
 
     # Import data from files
-    z, V_wt, f_s, v_hw_mean, v_hw_std, I_u = import_data(input_folder)
+    z, f_s, v_hw_mean, v_hw_std, I_u = import_data(input_folder)
     alpha = 10
 
+    # Compute freestream wind tunnel velocity
+    V_wt = get_freestream(v_hw_mean)
+
     # Compute drag
-    CD_computed = get_drag_coefficient(z,v_hw_mean)
+    CD_computed = get_drag_coefficient(z,V_wt,v_hw_mean)
     CD_xfoil = import_xfoil_CD(xfoil_file,alpha)
     print("-------------------------")
     print(f"AoA: {alpha} deg")
@@ -109,7 +110,8 @@ def main():
     print("-------------------------")
 
     # Export wake data
-    export_wake_data(output_folder+"/wake.csv", z, V_wt, f_s, v_hw_mean, v_hw_std, I_u)
+    V_wt_array = V_wt*np.ones(len(z))
+    export_wake_data(output_folder+"/wake.csv", z, V_wt_array, f_s, v_hw_mean, v_hw_std, I_u)
     print(f"Wrote wake file in {output_folder}")
 
 if __name__ == "__main__":
