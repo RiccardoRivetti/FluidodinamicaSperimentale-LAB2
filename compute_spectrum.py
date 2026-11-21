@@ -24,7 +24,7 @@ def import_data(filename):
 
     return z, f_sampling, time, V_wake
 
-def get_frequency_domain(V, f_s):
+def get_spectrum(V, f_s):
     x = np.asarray(V, dtype=float)
     N = len(x)
     dt = 1 / f_s
@@ -55,7 +55,7 @@ def main():
     z, f_sampling, time, V_wake = import_data(input_file)
 
     # Convert in frequency domain
-    frequency, amplitude = get_frequency_domain(V_wake, f_sampling)
+    frequency, amplitude = get_spectrum(V_wake, f_sampling)
 
     # Export data
     filename = output_folder + "/10deg_Z" + str(z) + ".csv"
