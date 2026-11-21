@@ -1,0 +1,115 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import argparse
+import pandas as pd
+from pathlib import Path
+import re
+
+colors_poli = ["#102C53", "#0BA4FF", "#67B2C6"]
+
+def read_header(filename):
+    with open(filename) as f:
+        line = f.readline()
+    pairs = re.findall(r"([^;=\s]+)\s*=\s*([^;]+);?", line)
+    return {k: float(v) for k, v in pairs}
+
+def get_filename(folder, z, extention):
+    return folder + f"/10deg_Z{z:.1f}" + extention
+
+def import_wake_velocity(folder, heights):
+    t_list = []
+    V_list = []
+
+    for z in heights:
+        filename = get_filename(folder,z,".dat")
+        filename = Path(filename)
+        header = read_header(filename)
+
+        f_sampling = header["Fs[Hz]"]
+        V_wake = np.loadtxt(filename,skiprows=1)
+        
+        samples = len(V_wake)
+        t_end = samples / f_sampling
+        time = np.linspace(0,t_end,samples)
+
+        t_list.append(time)
+        V_list.append(V_wake)
+
+    return np.column_stack(t_list), np.column_stack(V_list)
+
+def import_wake_spectrum(folder, heights):
+    f_list = []
+    amp_list = []
+
+    for z in heights:
+        filename = get_filename(folder,z,".csv")
+        filename = Path(filename)
+
+        data = np.loadtxt(filename,delimiter=",",skiprows=1)
+
+        f_list.append(data[:,0])
+        amp_list.append(data[:,1])
+
+    return np.column_stack(f_list), np.column_stack(amp_list)
+
+def plot_wake_velocity(heights, time, V_wake, show_plot):
+    fig, ax = plt.subplots()
+
+    for i in range(len(heights)):
+        ax.plot(time[:,i],V_wake[:,i],label=f"z = {heights[i]:.1f}",color=colors_poli[i],linewidth=1)
+
+    plt.xlim((0,5))
+    plt.ylim((10,20))
+
+    plt.grid(True,linestyle="--",alpha=0.4)
+    plt.legend(fontsize=12,loc="lower left")
+    plt.xlabel("Time [s]",fontsize=14)
+    plt.ylabel("$V_{wake}$ [m/s]",fontsize=14)
+    plt.title("AoA = 10 deg",fontsize=14,loc="right")
+
+    if show_plot:
+        plt.show()
+
+def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
+    fig, axs = plt.subplots(len(heights), 1, figsize=(8, 8), sharex=True)
+
+    for i in range(len(heights)):
+        axs[i].plot(frequency[:,i],amplitude[:,i],label=f"z = {heights[i]:.1f}",color=colors_poli[i],linewidth=1)
+
+        axs[i].set_xlim((0,np.max(frequency[:,i])))
+        axs[i].grid(True,linestyle="--",alpha=0.4)
+        axs[i].legend(fontsize=12,loc="upper right")
+        axs[i].set_ylabel("$|V_{wake}|$ [m/s]",fontsize=14)
+
+    axs[0].set_title("AoA = 10 deg",fontsize=14,loc="right")
+    axs[-1].set_xlabel("Frequency [Hz]",fontsize=14)
+
+
+    if show_plot:
+        plt.show()
+    
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-z", type=float, nargs=3, metavar=("z1", "z2", "z3"),
+                    default=(152.5, 170, 200), help="Vector of 3 heights to plot")
+    ap.add_argument("--plot", action="store_true", help="Show plots")
+    args = ap.parse_args()
+
+    heights = args.z
+    show_plot = args.plot
+
+    velocity_folder = "./Data/hot_wire"
+    spectrum_folder = "./Output/spectrum"
+
+    # Plot velocity in time
+    time, V_wake = import_wake_velocity(velocity_folder,heights)
+    plot_wake_velocity(heights,time,V_wake,show_plot)
+
+    # Plot spectrum
+    frequency, amplitude = import_wake_spectrum(spectrum_folder,heights)
+    plot_wake_spectrum(heights,frequency,amplitude,show_plot)
+
+
+if __name__ == "__main__":
+    main()
