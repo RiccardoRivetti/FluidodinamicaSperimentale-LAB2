@@ -2,7 +2,7 @@ import numpy as np
 import argparse
 from pathlib import Path
 import re
-from experimental_setup import *
+from scipy.signal import welch
 
 def read_header(filename):
     with open(filename) as f:
@@ -36,6 +36,27 @@ def get_spectrum(V, f_s):
 
     return f, amp
 
+def get_energy_spectrum(V, f_s, nseg=2**14):
+    V_bar = V.mean()
+    vp = V - V_bar
+
+    f, Pxx = welch(vp, fs=f_s, window="hann", nperseg=nseg, noverlap=nseg // 2,
+               detrend="constant", scaling="density")
+
+    k = 2 * np.pi * f / V_bar
+    Ek = Pxx * V_bar / (2 * np.pi)
+
+    return k[1:], Ek[1:]
+
+def get_K41(k, Ek, k_fit=(40,400), C=0.49):
+    # Estimate epsilon
+    mask = (k >= k_fit[0]) & (k <= k_fit[1])
+    eps_loc = (Ek[mask] * k[mask] ** (5 / 3) / C) ** 1.5
+    epsilon = eps_loc.mean()
+
+    # Return K41
+    return C * epsilon ** (2/3) * k ** (-5/3)
+
 def export_spectrum_data(filename,f,amp):
     data = np.column_stack((f,amp))
     header = "Frequency[Hz],Amplitude[m/s]"
@@ -54,12 +75,21 @@ def main():
     # Extract data
     z, f_sampling, time, V_wake = import_data(input_file)
 
-    # Convert in frequency domain
+    # Compute spectrum
     frequency, amplitude = get_spectrum(V_wake, f_sampling)
 
+    # Compute energy spectrum in spatial frequencies domain and K41 theory
+    k, Ek = get_energy_spectrum(V_wake, f_sampling)
+    K41 = get_K41(k, Ek)
+    print(len(k))
+    print(len(Ek))
+    print(len(K41))
+    print(len(frequency))
+
     # Export data
-    filename = output_folder + "/10deg_Z" + str(z) + ".csv"
-    export_spectrum_data(filename, frequency, amplitude)
+    filename = output_folder + "/10deg_Z" + str(z) + ".npz"
+    # export_spectrum_data(filename, frequency, amplitude)
+    np.savez(filename, f=frequency, amp=amplitude, k=k, Ek=Ek, K41=K41)
     print(f"Wrote spectrum file in {output_folder}")
     
 if __name__ == "__main__":

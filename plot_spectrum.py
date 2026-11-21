@@ -40,17 +40,29 @@ def import_wake_velocity(folder, heights):
 def import_wake_spectrum(folder, heights):
     f_list = []
     amp_list = []
+    k_list = []
+    Ek_list = []
+    K41_list = []
 
     for z in heights:
-        filename = get_filename(folder,z,".csv")
+        filename = get_filename(folder,z,".npz")
         filename = Path(filename)
 
-        data = np.loadtxt(filename,delimiter=",",skiprows=1)
+        data = np.load(filename)
 
-        f_list.append(data[:,0])
-        amp_list.append(data[:,1])
+        f_list.append(data["f"])
+        amp_list.append(data["amp"])
+        k_list.append(data["k"])
+        Ek_list.append(data["Ek"])
+        K41_list.append(data["K41"])
 
-    return np.column_stack(f_list), np.column_stack(amp_list)
+    f = np.column_stack(f_list)
+    amp = np.column_stack(amp_list)
+    k = np.column_stack(k_list)
+    Ek = np.column_stack(Ek_list)
+    K41 = np.column_stack(K41_list)
+
+    return f, amp, k, Ek, K41
 
 def plot_wake_velocity(heights, time, V_wake, show_plot):
     fig, ax = plt.subplots()
@@ -105,7 +117,7 @@ def main():
     plot_wake_velocity(heights,time,V_wake,show_plot)
 
     # Plot spectrum
-    frequency, amplitude = import_wake_spectrum(spectrum_folder,heights)
+    frequency, amplitude, k, Ek, K41 = import_wake_spectrum(spectrum_folder,heights)
     plot_wake_spectrum(heights,frequency,amplitude,show_plot)
 
 if __name__ == "__main__":
