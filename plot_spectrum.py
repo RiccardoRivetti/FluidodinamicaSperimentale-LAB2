@@ -84,7 +84,6 @@ def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
     axs[0].set_title("AoA = 10 deg",fontsize=14,loc="right")
     axs[-1].set_xlabel("Frequency [Hz]",fontsize=14)
 
-
     if show_plot:
         plt.show()
 
@@ -108,7 +107,6 @@ def main():
     # Plot spectrum
     frequency, amplitude = import_wake_spectrum(spectrum_folder,heights)
     plot_wake_spectrum(heights,frequency,amplitude,show_plot)
-
 
 if __name__ == "__main__":
     main()
