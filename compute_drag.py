@@ -51,13 +51,37 @@ def export_wake_data(filename, z, V_wt, f_s, v_hw_mean, v_hw_std, I_u):
 
     np.savetxt(filename,data,fmt="%.6e",delimiter=",",header=header,comments="")
 
-def get_drag_coefficient(z,V_wt,V_wake):
+def get_freestream(V, edge_frac=0.20, k=3):
+    n = len(V)
+    ne = max(3, int(edge_frac * n)) # How many edge point to consider
+
+    # Initial estimation of freestream velocity
+    edges = np.r_[V[:ne], V[-ne:]]
+    V0 = np.median(edges) # Median is more robust
+    sigma = max(np.std(edges), 0.002 * V0)      # Minimum std threshold: 0.2% di V0
+
+    # Locate the wake 
+    in_wake = (V0 - V) > k * sigma
+    if not in_wake.any():
+        raise ValueError("No wake detected")
+
+    # 2 points margin for each side
+    w = np.flatnonzero(in_wake) # Wake points idx
+    lo, hi = max(w[0] - 2, 0), min(w[-1] + 2, n - 1) # No idx outside array
+    outside = np.ones(n, bool); outside[lo:hi + 1] = False # Mask for points outside of the wake
+    if outside.sum() < 4:
+        raise ValueError("Too few points outside the wake")
+
+    # Return the mean of the points outside of the wake
+    return V[outside].mean()
+
+def get_drag_coefficient(z,V_wake):
     V_wake = np.asarray(V_wake, dtype=float)
-    V_wt = np.asarray(V_wt, dtype=float)
     z = np.asarray(z, dtype=float)*0.001 # convert in meters
+    V_wt = get_freestream(V_wake)
     
     integral = np.trapezoid((V_wake/V_wt) * (1-V_wake/V_wt),z)
-    CD = 2/(test_wing.chord*test_wing.span)*integral
+    CD = 2/(test_wing.chord)*integral
 
     return CD
 
@@ -76,7 +100,7 @@ def main():
     alpha = 10
 
     # Compute drag
-    CD_computed = get_drag_coefficient(z,V_wt,v_hw_mean)
+    CD_computed = get_drag_coefficient(z,v_hw_mean)
     CD_xfoil = import_xfoil_CD(xfoil_file,alpha)
     print("-------------------------")
     print(f"AoA: {alpha} deg")
