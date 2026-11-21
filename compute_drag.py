@@ -76,7 +76,7 @@ def get_drag_coefficient(z,V_wt,V_wake):
 
     return CD
 
-def get_drag_correction(CD,V_wt,rho=1.182):
+def get_drag_correction(CD, V_wt, rho=1.182):
     t = test_wing.thickness*test_wing.chord
     q = 0.5*rho*V_wt**2
     buoyancy = np.pi/2 * test_wing.shape_factor * t**2 * test_section.pressure_gradient / (q*test_wing.chord)
