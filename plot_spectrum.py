@@ -56,7 +56,7 @@ def plot_wake_velocity(heights, time, V_wake, show_plot):
     fig, ax = plt.subplots()
 
     for i in range(len(heights)):
-        ax.plot(time[:,i],V_wake[:,i],label=f"z = {heights[i]:.1f}",color=colors_poli[i],linewidth=1)
+        ax.plot(time[:,i],V_wake[:,i],label=f"z = {heights[i]:.1f} mm",color=colors_poli[i],linewidth=1)
 
     plt.xlim((0,5))
     plt.ylim((10,20))
@@ -74,7 +74,7 @@ def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
     fig, axs = plt.subplots(len(heights), 1, figsize=(8, 8), sharex=True)
 
     for i in range(len(heights)):
-        axs[i].plot(frequency[:,i],amplitude[:,i],label=f"z = {heights[i]:.1f}",color=colors_poli[i],linewidth=1)
+        axs[i].plot(frequency[:,i],amplitude[:,i],label=f"z = {heights[i]:.1f} mm",color=colors_poli[i],linewidth=1)
 
         axs[i].set_xlim((0,np.max(frequency[:,i])))
         axs[i].grid(True,linestyle="--",alpha=0.4)
@@ -87,7 +87,6 @@ def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
 
     if show_plot:
         plt.show()
-    
 
 def main():
     ap = argparse.ArgumentParser()
