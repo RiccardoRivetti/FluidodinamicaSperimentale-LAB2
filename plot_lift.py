@@ -39,6 +39,9 @@ def plot_lift_coefficient(alpha, CL_mean, CL_unc, alpha_xfoil, CL_xfoil, show_pl
     plt.xlabel(r"$\alpha$ [deg]",fontsize=14)
     plt.ylabel("$C_L$ [-]",fontsize=14)
 
+    plt.savefig(f"./Figures/CL_alpha.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/CL_alpha.pdf", bbox_inches="tight")
+
     if show_plot:
         plt.show()
 

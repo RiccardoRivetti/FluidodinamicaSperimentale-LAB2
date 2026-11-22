@@ -102,6 +102,9 @@ def plot_pressure_coefficient(x_taps, Cp_mean, Cp_unc, x_xfoil, Cp_xfoil, alpha,
     order = [1,2,0]
     plt.legend([handles[i] for i in order], [labels[i] for i in order], fontsize=14)
 
+    plt.savefig(f"./Figures/Cp_AoA_{alpha}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/Cp_AoA_{alpha}.pdf", bbox_inches="tight")
+
     if show_plot:
         plt.show()
 
@@ -126,6 +129,9 @@ def plot_airfoil_pressure(x_airfoil, y_airfoil, x_taps, y_taps, Cp_mean, alpha, 
     plt.xlabel("x/c [-]",fontsize=14)
     plt.ylabel("y/c [-]",fontsize=14)
     plt.title(f"AoA = {alpha} deg",fontsize=14,loc="right")
+
+    plt.savefig(f"./Figures/airfoil_pressure_AoA_{alpha}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/airfoil_pressure_AoA_{alpha}.pdf", bbox_inches="tight")
 
     if show_plot:
         plt.show()

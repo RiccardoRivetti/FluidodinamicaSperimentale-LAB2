@@ -79,6 +79,9 @@ def plot_wake_velocity(heights, time, V_wake, show_plot):
     plt.ylabel("$V_{wake}$ [m/s]",fontsize=14)
     plt.title("AoA = 10 deg",fontsize=14,loc="right")
 
+    plt.savefig(f"./Figures/wake_velocity.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/wake_velocity.pdf", bbox_inches="tight")
+
     if show_plot:
         plt.show()
 
@@ -96,10 +99,13 @@ def plot_wake_spectrum(heights, frequency, amplitude, show_plot):
     axs[0].set_title("AoA = 10 deg",fontsize=14,loc="right")
     axs[-1].set_xlabel("Frequency [Hz]",fontsize=14)
 
+    plt.savefig(f"./Figures/wake_spectrum.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/wake_spectrum.pdf", bbox_inches="tight")
+
     if show_plot:
         plt.show()
 
-def plot_energy_spectrum(k, Ek, K41, show_plot):
+def plot_energy_spectrum(k, Ek, K41, z, show_plot):
     fig, ax = plt.subplots()
 
     ax.loglog(k,Ek,label=f"Misura sperimentale",color=colors_poli[0],linewidth=1)
@@ -112,7 +118,10 @@ def plot_energy_spectrum(k, Ek, K41, show_plot):
     plt.legend(fontsize=12,loc="lower left")
     plt.xlabel("$k$ [rad/m]",fontsize=14)
     plt.ylabel("$E(k)$ [m$^3$s$^{-2}$]",fontsize=14)
-    plt.title("AoA = 10 deg",fontsize=14,loc="right")
+    plt.title(f"z = {z} mm",fontsize=14,loc="right")
+
+    plt.savefig(f"./Figures/energy_spectrum.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/energy_spectrum.pdf", bbox_inches="tight")
 
     if show_plot:
         plt.show()
@@ -139,7 +148,8 @@ def main():
     plot_wake_spectrum(heights,frequency,amplitude,show_plot)
 
     # Plot energy spectrum
-    plot_energy_spectrum(k[:,0], Ek[:,0], K41[:,0], show_plot)
+    z_idx = 0 # Select which z to plot the energy spectrum
+    plot_energy_spectrum(k[:,z_idx], Ek[:,z_idx], K41[:,z_idx], heights[z_idx], show_plot)
 
 
 if __name__ == "__main__":

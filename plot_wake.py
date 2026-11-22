@@ -10,7 +10,7 @@ bluepoli3 = "#67B2C6"
 def import_data(filename):
     return pd.read_csv(filename)
 
-def plot_wake_velocity(z,v_hw,show_plot):
+def plot_wake_velocity_profile(z,v_hw,show_plot):
     fig, ax = plt.subplots()
 
     ax.plot(v_hw,z,label="Misura sperimentale",marker="s",color=bluepoli1,clip_on=False)
@@ -21,6 +21,9 @@ def plot_wake_velocity(z,v_hw,show_plot):
     plt.xlabel("$V_{wake}$ [m/s]",fontsize=14)
     plt.ylabel("$z$ [mm]",fontsize=14)
     plt.title("AoA = 10 deg",fontsize=14,loc="right")
+
+    plt.savefig(f"./Figures/wake_profile.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/wake_profile.pdf", bbox_inches="tight")
 
     if show_plot:
         plt.show()
@@ -35,6 +38,9 @@ def plot_turbulence_intensity(z,I_u,show_plot):
     plt.xlabel("$I_u$ [%]",fontsize=14)
     plt.ylabel("$z$ [mm]",fontsize=14)
     plt.title("AoA = 10 deg",fontsize=14,loc="right")
+
+    plt.savefig(f"./Figures/turbulence_intensity.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"./Figures/turbulence_intensity.pdf", bbox_inches="tight")
 
     if show_plot:
         plt.show()
@@ -52,7 +58,7 @@ def main():
     DATA = import_data(input_file)
 
     # Plot wake velocity and turbulence intensity
-    plot_wake_velocity(DATA["z"],DATA["v_hw_mean"],show_plot)
+    plot_wake_velocity_profile(DATA["z"],DATA["v_hw_mean"],show_plot)
     plot_turbulence_intensity(DATA["z"],DATA["I_u"],show_plot)
 
 if __name__ == "__main__":
