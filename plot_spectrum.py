@@ -151,6 +151,5 @@ def main():
     z_idx = 0 # Select which z to plot the energy spectrum
     plot_energy_spectrum(k[:,z_idx], Ek[:,z_idx], K41[:,z_idx], heights[z_idx], show_plot)
 
-
 if __name__ == "__main__":
     main()
